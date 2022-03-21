@@ -15,4 +15,4 @@ npx http-server
 
 ```
 
-![Screenshot](thumbnail.png)
+![Screenshot](screenshot.png)
