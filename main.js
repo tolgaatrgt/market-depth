@@ -193,129 +193,6 @@ Vue.createApp({
       const xAxisGenerator = d3.axisBottom(xScale).ticks(3);
       const yAxisGenerator = d3.axisRight(yScale).ticks(3);
 
-      svg
-        .append("rect")
-        .attr("id", "overlay")
-        .attr("width", this.chartWidth - rightSpacing)
-        .attr("height", this.chartHeight - topSpacing - 10)
-        .attr("x", 0)
-        .attr("y", topSpacing - 10)
-        .style("pointer-events", "all")
-        .style("fill", "none")
-        .style("cursor", "cell");
-
-      /////////////////////////////////////////////////////// mouse events
-      const overlay = d3.select("#overlay");
-
-      overlay.on("mouseenter", (e) => {
-        d3.select("body").style("overflow", "hidden");
-      });
-
-      overlay.on("mousemove", (e) => {
-        d3.selectAll(
-          "#yTooltip, #yTooltipLine, #xTooltip, #xTooltipLine"
-        ).remove();
-
-        const coordinates = d3.pointer(e);
-        const x = coordinates[0];
-        const y = coordinates[1];
-        this.lastMouseX = x;
-        this.lastMouseY = y;
-        const yPrice = yScale.invert(y - topSpacing);
-        const xTotalVolume = xScale.invert(this.chartWidth - x - rightSpacing);
-
-        svg.append("g").attr("id", "yTooltip");
-
-        svg.append("g").attr("id", "xTooltip");
-
-        const yTooltip = d3.selectAll("#yTooltip");
-        const xTooltip = d3.selectAll("#xTooltip");
-
-        yTooltip
-          .append("rect")
-          .attr("width", "2.5rem")
-          .attr("height", "1.25rem")
-          .attr("y", y - 10)
-          .attr("x", this.chartWidth - rightSpacing)
-          .style("fill", "red");
-
-        yTooltip
-          .append("text")
-          .style("font-size", "12px")
-          .style("font-weight", "bold")
-          .style("fill", theme.textPrimary)
-          .attr("y", y + 4)
-          .attr("x", this.chartWidth - rightSpacing)
-          .text(Number(yPrice.toFixed(2)));
-
-        svg
-          .append("line")
-          .attr("id", "yTooltipLine")
-          .attr("x1", this.chartWidth - rightSpacing)
-          .attr("x2", 0)
-          .attr("y1", y)
-          .attr("y2", y)
-          .style("stroke", theme.grayDark)
-          .style("stroke-width", 1)
-          .style("cursor", "cell")
-          .style("stroke-dasharray", "2,2")
-          .style("pointer-events", "none");
-
-        xTooltip
-          .append("rect")
-          .attr("width", xTotalVolume.toFixed(2).length * 7)
-          .attr("height", "1.25rem")
-          .attr("x", x - 22)
-          .attr("y", this.chartHeight - topSpacing + 2)
-          .style("fill", "red");
-
-        xTooltip
-          .append("text")
-          .style("font-size", "12px")
-          .style("font-weight", "bold")
-          .style("fill", theme.textPrimary)
-          .attr("x", x - 20)
-          .attr("y", this.chartHeight - 5)
-          .text(Number(xTotalVolume.toFixed(2)));
-
-        svg
-          .append("line")
-          .attr("id", "xTooltipLine")
-          .attr("x1", x)
-          .attr("x2", x)
-          .attr("y1", topSpacing - 10)
-          .attr("y2", this.chartHeight - topSpacing)
-          .style("stroke", theme.grayDark)
-          .style("stroke-width", 1)
-          .style("cursor", "cell")
-          .style("stroke-dasharray", "2,2")
-          .style("pointer-events", "none");
-      });
-
-      const onWheel = (direction) => {
-        if (!direction && this.scope <= 0.95) {
-          this.scope = Number((this.scope + 0.05).toFixed(2));
-        } else if (direction && this.scope > 0.05) {
-          this.scope = Number((this.scope - 0.05).toFixed(2));
-        }
-      };
-
-      svg.on("wheel", (e) => {
-        const direction = !(e.wheelDelta < 0);
-        direction ? onWheel(true) : onWheel(false);
-      });
-
-      svg.on("mouseenter", (e) => {
-        d3.selectAll("#order-flow-page").style("overflow", "hidden");
-      });
-      svg.on("mouseleave", (e) => {
-        d3.selectAll("#order-flow-page").style("overflow", "auto");
-        this.lastMouseX = null;
-        this.lastMouseY = null;
-      });
-
-      ///////////////////////////////////////////////////////
-
       function getStandardDeviation(arr) {
         const volumes = arr.map((item) => item.volume);
         const n = volumes.length;
@@ -601,6 +478,130 @@ Vue.createApp({
           }
         }
       });
+
+
+      /////////////////////////////////////////////////////// mouse events
+      svg
+      .append("rect")
+      .attr("id", "overlay")
+      .attr("width", this.chartWidth - rightSpacing)
+      .attr("height", this.chartHeight - topSpacing - 10)
+      .attr("x", 0)
+      .attr("y", topSpacing - 10)
+      .style("pointer-events", "all")
+      .style("fill", "none")
+      .style("cursor", "cell");
+      const overlay = d3.select("#overlay");
+
+      overlay.on("mouseenter", (e) => {
+        d3.select("body").style("overflow", "hidden");
+      });
+
+      overlay.on("mousemove", (e) => {
+        d3.selectAll(
+          "#yTooltip, #yTooltipLine, #xTooltip, #xTooltipLine"
+        ).remove();
+
+        const coordinates = d3.pointer(e);
+        const x = coordinates[0];
+        const y = coordinates[1];
+        this.lastMouseX = x;
+        this.lastMouseY = y;
+        const yPrice = yScale.invert(y - topSpacing);
+        const xTotalVolume = xScale.invert(this.chartWidth - x - rightSpacing);
+
+        svg.append("g").attr("id", "yTooltip");
+
+        svg.append("g").attr("id", "xTooltip");
+
+        const yTooltip = d3.selectAll("#yTooltip");
+        const xTooltip = d3.selectAll("#xTooltip");
+
+        yTooltip
+          .append("rect")
+          .attr("width", "2.5rem")
+          .attr("height", "1.25rem")
+          .attr("y", y - 10)
+          .attr("x", this.chartWidth - rightSpacing)
+          .style("fill", "red");
+
+        yTooltip
+          .append("text")
+          .style("font-size", "12px")
+          .style("font-weight", "bold")
+          .style("fill", theme.textPrimary)
+          .attr("y", y + 4)
+          .attr("x", this.chartWidth - rightSpacing)
+          .text(Number(yPrice.toFixed(2)));
+
+        svg
+          .append("line")
+          .attr("id", "yTooltipLine")
+          .attr("x1", this.chartWidth - rightSpacing)
+          .attr("x2", 0)
+          .attr("y1", y)
+          .attr("y2", y)
+          .style("stroke", theme.grayDark)
+          .style("stroke-width", 1)
+          .style("cursor", "cell")
+          .style("stroke-dasharray", "2,2")
+          .style("pointer-events", "none");
+
+        xTooltip
+          .append("rect")
+          .attr("width", xTotalVolume.toFixed(2).length * 7)
+          .attr("height", "1.25rem")
+          .attr("x", x - 22)
+          .attr("y", this.chartHeight - topSpacing + 2)
+          .style("fill", "red");
+
+        xTooltip
+          .append("text")
+          .style("font-size", "12px")
+          .style("font-weight", "bold")
+          .style("fill", theme.textPrimary)
+          .attr("x", x - 20)
+          .attr("y", this.chartHeight - 5)
+          .text(Number(xTotalVolume.toFixed(2)));
+
+        svg
+          .append("line")
+          .attr("id", "xTooltipLine")
+          .attr("x1", x)
+          .attr("x2", x)
+          .attr("y1", topSpacing - 10)
+          .attr("y2", this.chartHeight - topSpacing)
+          .style("stroke", theme.grayDark)
+          .style("stroke-width", 1)
+          .style("cursor", "cell")
+          .style("stroke-dasharray", "2,2")
+          .style("pointer-events", "none");
+      });
+
+      const onWheel = (direction) => {
+        if (!direction && this.scope <= 0.95) {
+          this.scope = Number((this.scope + 0.05).toFixed(2));
+        } else if (direction && this.scope > 0.05) {
+          this.scope = Number((this.scope - 0.05).toFixed(2));
+        }
+      };
+
+      svg.on("wheel", (e) => {
+        const direction = !(e.wheelDelta < 0);
+        direction ? onWheel(true) : onWheel(false);
+      });
+
+      svg.on("mouseenter", (e) => {
+        d3.selectAll("#order-flow-page").style("overflow", "hidden");
+      });
+      svg.on("mouseleave", (e) => {
+        d3.selectAll("#order-flow-page").style("overflow", "auto");
+        this.lastMouseX = null;
+        this.lastMouseY = null;
+      });
+
+      ///////////////////////////////////////////////////////
+
 
       // section in below keep coord. tooltips in the chart on mousemove end.
       var x = this.lastMouseX;
