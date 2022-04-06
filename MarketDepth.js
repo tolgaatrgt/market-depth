@@ -1,43 +1,18 @@
-import { getRandomNumberBetween } from "./utils.js";
-
-Vue.createApp({
-  data() {
+export default {
+  template:
+    "<div  :style='{borderRight: `solid 1px ${selectedTheme.border}`,paddingRight: `1rem`}' id='market_depth_container'></div>",
+  data: () => {
     return {
-      orderData: null,
       chartData: null,
       scope: 1,
-      chartWidth: 400,
-      chartHeight: 800,
-      selectedTheme: true,
+      chartWidth: 300,
+      chartHeight: 500,
       renderTask: null,
       lastMouseX: null,
       lastMouseY: null,
-      themeOptions: {
-        dark: {
-          textPrimary: "#ffffff",
-          grayLight: "#4d4d4d",
-          grayDark: "#ebebeb",
-          blue: "#5757ff",
-          svgBg: "#000000",
-          askLine: "#e80b3a",
-          askRect: "#300000",
-          bidLine: "#00aa40",
-          bidRect: "#00200c",
-        },
-        light: {
-          textPrimary: "#ffffff",
-          grayLight: "#d3d3d3",
-          grayDark: "#8b8b8b",
-          blue: "darkblue",
-          svgBg: "#ffffff",
-          askLine: "#ff5050",
-          askRect: "#ffe5ec",
-          bidLine: "#3cd83c",
-          bidRect: "#d9ffe7",
-        },
-      },
     };
   },
+  props: ["selectedTheme"],
   created() {
     this.fillData();
   },
@@ -77,41 +52,44 @@ Vue.createApp({
     },
     selectedTheme: function (newVal, oldVal) {
       this.renderChart();
-      if (!newVal) {
-        d3.select("body").style("background", "#000000");
-        d3.selectAll("div").style("color", "#ffffff");
-      } else {
-        d3.select("body").style("background", "#ffffff");
-        d3.selectAll("div").style("color", "#000000");
-      }
     },
   },
   methods: {
+    onWheel(direction) {
+      if (!direction && this.scope <= 0.95) {
+        this.scope = Number((this.scope + 0.05).toFixed(2));
+      } else if (direction && this.scope > 0.05) {
+        this.scope = Number((this.scope - 0.05).toFixed(2));
+      }
+    },
+    getRandomNumberBetween(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    },
     orderBookGenerator() {
       const asks = [];
       const bids = [];
-      const askAmount = getRandomNumberBetween(50, 200);
-      const bidAmount = getRandomNumberBetween(50, 200);
+      const askAmount = this.getRandomNumberBetween(50, 200);
+      const bidAmount = this.getRandomNumberBetween(50, 200);
       for (var i = 0; i < askAmount; i++) {
         const dummyOrder = {};
-        dummyOrder.price = getRandomNumberBetween(105, 200);
-        dummyOrder.volume = getRandomNumberBetween(10, 1000);
+        dummyOrder.price = this.getRandomNumberBetween(105, 200);
+        dummyOrder.volume = this.getRandomNumberBetween(10, 1000);
         asks.push(dummyOrder);
       }
       for (var i = 0; i < bidAmount; i++) {
         const dummyOrder = {};
-        dummyOrder.price = getRandomNumberBetween(0, 100);
-        dummyOrder.volume = getRandomNumberBetween(10, 1000);
+        dummyOrder.price = this.getRandomNumberBetween(0, 100);
+        dummyOrder.volume = this.getRandomNumberBetween(10, 1000);
         bids.push(dummyOrder);
       }
       const orderBook = { asks: asks, bids: bids };
       return orderBook;
     },
     fillData() {
-      this.orderData = this.orderBookGenerator();
+      let orderData = this.orderBookGenerator();
       let filledData = {};
-      let asks = this.orderData.asks.sort((a, b) => a.price - b.price);
-      let bids = this.orderData.bids.sort((a, b) => b.price - a.price);
+      let asks = orderData.asks.sort((a, b) => a.price - b.price);
+      let bids = orderData.bids.sort((a, b) => b.price - a.price);
 
       let askNormalizedData = [];
       let bidNormalizedData = [];
@@ -155,9 +133,9 @@ Vue.createApp({
       this.chartData = filledData;
     },
     renderChart() {
-      const theme = this.themeOptions[this.selectedTheme ? "light" : "dark"];
+      const theme = this.selectedTheme;
       d3.selectAll("#market_depth_container svg").remove();
-      d3.selectAll("#tooltip").remove();
+      //d3.selectAll("#tooltip").remove();
       const displayData = this.displayData;
       const maxVolume = d3.max(
         [...displayData.asks, ...displayData.bids],
@@ -176,7 +154,7 @@ Vue.createApp({
         .attr("id", "chartSVG")
         .attr("width", this.chartWidth)
         .attr("height", this.chartHeight)
-        .style("background", theme.svgBg);
+        .style("background", "transparent");
       const yScale = d3
         .scaleLinear()
         .domain([
@@ -399,7 +377,7 @@ Vue.createApp({
               .style("font-family", "PT Mono")
               .style("font-size", 12)
               .attr("x", 0)
-              .attr("y", yScale(displayData.asks[i + 1].price) + topSpacing - 2)
+              .attr("y", yScale(displayData.asks[i + 1].price) + topSpacing - 3)
               .text(displayData.asks[i + 1].price.toFixed(2));
           }
         }
@@ -479,18 +457,17 @@ Vue.createApp({
         }
       });
 
-
       /////////////////////////////////////////////////////// mouse events
       svg
-      .append("rect")
-      .attr("id", "overlay")
-      .attr("width", this.chartWidth - rightSpacing)
-      .attr("height", this.chartHeight - topSpacing - 10)
-      .attr("x", 0)
-      .attr("y", topSpacing - 10)
-      .style("pointer-events", "all")
-      .style("fill", "none")
-      .style("cursor", "cell");
+        .append("rect")
+        .attr("id", "overlay")
+        .attr("width", this.chartWidth - rightSpacing)
+        .attr("height", this.chartHeight - topSpacing - 10)
+        .attr("x", 0)
+        .attr("y", topSpacing - 10)
+        .style("pointer-events", "all")
+        .style("fill", "none")
+        .style("cursor", "cell");
       const overlay = d3.select("#overlay");
 
       overlay.on("mouseenter", (e) => {
@@ -578,17 +555,9 @@ Vue.createApp({
           .style("pointer-events", "none");
       });
 
-      const onWheel = (direction) => {
-        if (!direction && this.scope <= 0.95) {
-          this.scope = Number((this.scope + 0.05).toFixed(2));
-        } else if (direction && this.scope > 0.05) {
-          this.scope = Number((this.scope - 0.05).toFixed(2));
-        }
-      };
-
       svg.on("wheel", (e) => {
         const direction = !(e.wheelDelta < 0);
-        direction ? onWheel(true) : onWheel(false);
+        direction ? this.onWheel(true) : this.onWheel(false);
       });
 
       svg.on("mouseenter", (e) => {
@@ -601,7 +570,6 @@ Vue.createApp({
       });
 
       ///////////////////////////////////////////////////////
-
 
       // section in below keep coord. tooltips in the chart on mousemove end.
       var x = this.lastMouseX;
@@ -621,7 +589,7 @@ Vue.createApp({
           .attr("width", yPrice.toFixed(2).length * 7.25)
           .attr("height", "1.25rem")
           .attr("y", y - 10)
-          .attr("x", this.chartWidth - rightSpacing + 1)
+          .attr("x", this.chartWidth - rightSpacing)
           .style("fill", "red");
 
         yTooltip
@@ -630,7 +598,7 @@ Vue.createApp({
           .style("font-weight", "bold")
           .style("fill", "white")
           .attr("y", y + 4)
-          .attr("x", this.chartWidth - rightSpacing + 2)
+          .attr("x", this.chartWidth - rightSpacing)
           .text(Number(yPrice.toFixed(2)));
 
         svg
@@ -686,10 +654,7 @@ Vue.createApp({
         d3.selectAll(".supResLine").style("visibility", "visible");
         d3.select("body").style("overflow", "auto");
       });
-      console.log("CHART RENDERED SUCCESSFULLY.");
-    },
-    toggleTheme() {
-      this.selectedTheme = this.selectedTheme === "light" ? "dark" : "light";
+      //console.log("CHART RENDERED SUCCESSFULLY.");
     },
   },
-}).mount("#app");
+};
