@@ -4,8 +4,8 @@ export default {
     return {
       chartData: null,
       scope: 1,
-      chartWidth: 650,
-      chartHeight: 300,
+      chartWidth: 750,
+      chartHeight: 250,
       renderTask: null,
       lastMouseX: null,
       lastMouseY: null,
